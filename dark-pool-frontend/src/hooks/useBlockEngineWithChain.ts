@@ -25,6 +25,12 @@ export function useBlockEngineWithChain(config?: {
   const [blockchainEnabledState, setBlockchainEnabledState] = useState(blockchainEnabled);
   const demoDataRef = useRef<ReturnType<typeof generateDemoData> | null>(null);
 
+  // Update blockchain enabled state when prop changes
+  useEffect(() => {
+    console.log('🔄 Prop blockchainEnabled changed to:', blockchainEnabled);
+    setBlockchainEnabledState(blockchainEnabled);
+  }, [blockchainEnabled]);
+
   // Initialize blockchain connection
   const connectWallet = useCallback(async () => {
     try {

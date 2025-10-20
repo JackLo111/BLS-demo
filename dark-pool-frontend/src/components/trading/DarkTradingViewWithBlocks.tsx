@@ -67,14 +67,27 @@ export const DarkTradingViewWithBlocks: React.FC<DarkTradingViewWithBlocksProps>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!amount) return;
+    console.log('=== handleSubmit called ===');
+    console.log('amount:', amount);
+    console.log('blockchainEnabled:', blockchainEnabled);
+    console.log('orderType:', orderType);
+    console.log('side:', side);
+
+    if (!amount) {
+      console.log('Early return: no amount');
+      return;
+    }
 
     // Check if blockchain is enabled and wallet is connected
     if (blockchainEnabled) {
+      console.log('Blockchain mode enabled, checking wallet...');
+
       // Direct check using MetaMask API
       const accounts = await window.ethereum?.request({
         method: 'eth_accounts'
       });
+
+      console.log('Accounts from MetaMask:', accounts);
 
       if (!accounts || accounts.length === 0) {
         console.log('Blockchain mode enabled but wallet not connected');
@@ -87,16 +100,20 @@ export const DarkTradingViewWithBlocks: React.FC<DarkTradingViewWithBlocksProps>
         method: 'eth_chainId'
       });
 
+      console.log('Chain ID from MetaMask:', chainId);
+
       if (chainId !== '0x7a69') { // 31337 in hex
         console.log('Blockchain mode enabled but wrong network, current chainId:', chainId);
         alert('Please connect to Hardhat network (Chain ID: 31337)');
         return;
       }
 
-      console.log('Wallet connection verified:', {
+      console.log('✅ Wallet connection verified:', {
         accounts,
         chainId
       });
+    } else {
+      console.log('Local mode - skipping blockchain checks');
     }
 
     // Check if identity is verified (temporarily disabled for testing)
@@ -117,9 +134,12 @@ export const DarkTradingViewWithBlocks: React.FC<DarkTradingViewWithBlocksProps>
       anonymousId: identity?.anonymousId || 'test_anonymous_id_demo' // Use test ID if no identity
     };
 
+    console.log('About to call addOrder with data:', orderData);
+    console.log('Blockchain enabled for this order:', blockchainEnabled);
+
     try {
       const order = await addOrder(orderData);
-      console.log('Order added:', order);
+      console.log('✅ Order added successfully:', order);
 
       if (blockchainEnabled) {
         console.log('Order submitted to blockchain');

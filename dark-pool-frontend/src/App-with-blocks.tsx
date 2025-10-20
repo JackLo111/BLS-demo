@@ -79,18 +79,36 @@ function AppWithBlocks() {
 
               {/* Blockchain Mode Toggle */}
               <button
-                onClick={() => {
-                  // Check if wallet is connected before enabling blockchain mode
-                  if (!blockchainEnabled && !isConnected && !walletAddress) {
-                    console.log('Wallet not connected, showing alert');
-                    alert('Please connect your wallet first before enabling blockchain mode');
-                    return;
+                onClick={async () => {
+                  // If enabling blockchain mode, check wallet connection directly
+                  if (!blockchainEnabled) {
+                    try {
+                      const accounts = await window.ethereum?.request({
+                        method: 'eth_accounts'
+                      });
+
+                      if (!accounts || accounts.length === 0) {
+                        alert('Please connect your wallet first before enabling blockchain mode');
+                        return;
+                      }
+
+                      const chainId = await window.ethereum?.request({
+                        method: 'eth_chainId'
+                      });
+
+                      if (chainId !== '0x7a69') {
+                        alert('Please connect to Hardhat network first');
+                        return;
+                      }
+
+                      console.log('✅ Wallet verified, enabling blockchain mode');
+                    } catch (error) {
+                      console.error('Failed to check wallet:', error);
+                      alert('Failed to check wallet connection');
+                      return;
+                    }
                   }
-                  if (!blockchainEnabled && !isCorrectNetwork) {
-                    console.log('Wrong network, showing alert');
-                    alert('Please connect to Hardhat network first');
-                    return;
-                  }
+
                   console.log('Toggling blockchain mode to:', !blockchainEnabled);
                   setBlockchainEnabled(!blockchainEnabled);
                 }}

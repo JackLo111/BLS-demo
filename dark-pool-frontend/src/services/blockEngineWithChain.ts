@@ -323,6 +323,13 @@ export class BlockEngineWithChain {
 
     // If blockchain is enabled, submit to blockchain first
     if (this.isBlockchainEnabled) {
+      console.log('🔗 Blockchain enabled, attempting to submit order to blockchain...');
+      console.log('Order data:', {
+        side: order.side,
+        amount: order.amount.toString(),
+        price: order.price?.toString() || '0'
+      });
+
       try {
         const blockchainOrderId = await web3Service.placeOrder(
           order.side === 'buy',
@@ -332,11 +339,14 @@ export class BlockEngineWithChain {
 
         // Use blockchain order ID
         order.id = blockchainOrderId;
-        console.log('Order submitted to blockchain:', blockchainOrderId);
+        console.log('✅ Order submitted to blockchain successfully:', blockchainOrderId);
       } catch (error) {
-        console.error('Failed to submit order to blockchain:', error);
+        console.error('❌ Failed to submit order to blockchain:', error);
+        console.error('Error details:', error);
         throw error;
       }
+    } else {
+      console.log('📍 Local mode - skipping blockchain submission');
     }
 
     // Add to current block
@@ -439,9 +449,12 @@ export class BlockEngineWithChain {
 
   // Enable/disable blockchain integration
   public setBlockchainEnabled(enabled: boolean) {
+    console.log('🔧 setBlockchainEnabled called with:', enabled);
     this.isBlockchainEnabled = enabled;
+    console.log('🔧 this.isBlockchainEnabled is now:', this.isBlockchainEnabled);
 
     if (enabled && !this.syncTimer) {
+      console.log('🔧 Starting blockchain sync...');
       this.startBlockchainSync();
     } else if (!enabled && this.syncTimer) {
       clearInterval(this.syncTimer);
